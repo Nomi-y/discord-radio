@@ -6,5 +6,11 @@ export default {
         intermissions: path.join(__dirname, "../resources/intermissions/"),
     },
     intermissionEveryXTracks: 2,
-    intermissionQueueSize: 1
+    intermissionQueueSize: 1,
+
+    messages: {
+        guildRequired: 'This command only works in servers',
+        voiceChannelRequired: 'You must be in a voice channel to do this'
+
+    }
 }

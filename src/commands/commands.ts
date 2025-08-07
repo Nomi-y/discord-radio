@@ -1,11 +1,21 @@
-import { ping } from './ping';
-import { join } from './join';
 import type { BotCommand } from '../types';
 import { ChatInputCommandInteraction } from 'discord.js';
 
+
+import { ping } from './ping';
+import { join } from './join';
+import { pause } from './pause'
+import { play } from './play';
+import { shuffle } from './shuffle';
+import { skip } from './skip';
+
 export const commands: Record<string, BotCommand> = {
     ping,
-    join
+    join,
+    pause,
+    play,
+    shuffle,
+    skip
 };
 
 export const COMMANDS = Object.values(commands).map(cmd => cmd.data);

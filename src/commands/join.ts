@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { VoiceService } from '../voice/service';
 import { BotCommand } from '../types';
 import { getSongListFromLocalFiles } from '../utils';
-
+import config from '../config';
 export const join: BotCommand = {
     data: {
         name: 'join',
@@ -10,7 +10,7 @@ export const join: BotCommand = {
     },
     async execute(interaction: ChatInputCommandInteraction) {
         if (!interaction.inGuild()) {
-            return interaction.reply('This command only works in servers')
+            return interaction.reply(config.messages.guildRequired)
         }
 
         const member = await interaction.guild?.members.fetch(interaction.user.id)
@@ -18,7 +18,7 @@ export const join: BotCommand = {
 
         if (!channel) {
             return interaction.reply({
-                content: 'You must be in a voice channel to do this',
+                content: config.messages.voiceChannelRequired,
                 flags: MessageFlags.Ephemeral
             })
         }
@@ -29,7 +29,7 @@ export const join: BotCommand = {
             const songs = await getSongListFromLocalFiles()
             songs.forEach(s => session.player.addToQueue(s))
 
-            session.player.shuffleQueue()
+            session.player.shuffle()
             session.player.playNextInQueue()
 
             return interaction.reply(`Joined ${channel.name}`)

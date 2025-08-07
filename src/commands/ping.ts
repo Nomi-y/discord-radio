@@ -6,6 +6,6 @@ export const ping: BotCommand = {
         description: 'Checks if the bot is online'
     },
     async execute(interaction) {
-        await interaction.reply('🏓 Pong!');
+        await interaction.reply('Good fucking morning');
     }
 };
