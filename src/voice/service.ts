@@ -1,4 +1,4 @@
-import { joinVoiceChannel } from '@discordjs/voice';
+import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 import { VoiceBasedChannel } from 'discord.js';
 import { VoiceSession } from '../types';
 import { AudioPlayerService } from './player';
@@ -19,6 +19,9 @@ export class VoiceService {
 
         connection.on("stateChange", (oldState, newState) => {
             console.log(`Connection state: ${oldState.status} → ${newState.status}`);
+            if (newState.status === VoiceConnectionStatus.Disconnected) {
+                this.leave(channel.guild.id);
+            }
         });
 
         setTimeout(() => {
