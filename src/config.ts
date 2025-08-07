@@ -4,5 +4,7 @@ export default {
     paths: {
         music: path.join(__dirname, "../resources/music/"),
         intermissions: path.join(__dirname, "../resources/intermissions/"),
-    }
+    },
+    intermissionEveryXTracks: 2,
+    intermissionQueueSize: 1
 }
