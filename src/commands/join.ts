@@ -29,6 +29,7 @@ export const join: BotCommand = {
             const songs = await getSongListFromLocalFiles()
             songs.forEach(s => session.player.addToQueue(s))
 
+            session.player.shuffleQueue()
             session.player.playNextInQueue()
 
             return interaction.reply(`Joined ${channel.name}`)
