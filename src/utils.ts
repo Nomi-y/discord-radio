@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import config from './config'
-import path from 'path/posix'
+import path from 'path'
+import { Interaction, VoiceBasedChannel } from 'discord.js'
 
 export async function getSongListFromLocalFiles(): Promise<string[]> {
     try {
@@ -23,5 +24,19 @@ export async function getRandomIntermission(): Promise<string | null> {
     } catch (e) {
         console.error(e)
         return null
+    }
+}
+
+export const InteractionHelper = {
+
+    async isInVoiceChannel(interaction: Interaction): Promise<boolean> {
+        const member = await interaction.guild?.members.fetch(interaction.user.id)
+        const channel = member?.voice.channel
+        return !!channel
+    },
+
+    async getUserVoiceChannel(interaction: Interaction): Promise<VoiceBasedChannel | null | undefined> {
+        const member = await interaction.guild?.members.fetch(interaction.user.id)
+        return member?.voice.channel
     }
 }

@@ -1,7 +1,7 @@
-import { Client, GatewayIntentBits, REST, Routes } from 'discord.js';
-import dotenv from 'dotenv';
+import { Client, GatewayIntentBits, REST, Routes } from 'discord.js'
+import dotenv from 'dotenv'
 
-import { COMMANDS, executeCommand } from './commands/commands';
+import { COMMANDS, executeCommand } from './commands/commands'
 
 dotenv.config()
 
@@ -29,13 +29,19 @@ async function deployCommands() {
 
         console.log('Commands deployed!');
     } catch (error) {
-        console.error('Failed to deploy commands:', error);
+        console.error('Failed to deploy commands:', error)
     }
 }
+// Silencing warning from @discordjs/voice setting negative timeouts
+process.on('warning', warning => {
+    if (warning.name !== 'TimeoutNegativeWarning') {
+        console.warn(warning)
+    }
+})
 
 client.on('interactionCreate', async interaction => {
     if (interaction.isChatInputCommand()) {
-        await executeCommand(interaction);
+        await executeCommand(interaction)
     }
 });
 

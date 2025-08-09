@@ -5,10 +5,10 @@ import { VoiceService } from "../voice/service"
 import config from "../config"
 import { InteractionHelper } from "../utils"
 
-export const pause: BotCommand = {
+export const stop: BotCommand = {
     data: {
-        name: 'pause',
-        description: 'Pauses playback'
+        name: 'stop',
+        description: 'Stops playback'
     },
     async execute(interaction) {
         const guildID = interaction.guild?.id
@@ -17,8 +17,11 @@ export const pause: BotCommand = {
             return interaction.reply(config.messages.guildRequired)
         }
 
-        if (await InteractionHelper.isInVoiceChannel(interaction)) {
-            return interaction.reply(config.messages.voiceChannelRequired)
+        if (!InteractionHelper.isInVoiceChannel(interaction)) {
+            return interaction.reply({
+                content: config.messages.voiceChannelRequired,
+                flags: MessageFlags.Ephemeral
+            })
         }
 
         const session = VoiceService.getSession(guildID)
@@ -30,8 +33,9 @@ export const pause: BotCommand = {
             })
         }
 
-        session.player.pause()
+        VoiceService.leave(guildID)
 
-        return interaction.reply("Paused playback")
+        return interaction.reply('Stopped playback')
+
     }
 };

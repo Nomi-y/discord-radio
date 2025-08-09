@@ -1,4 +1,4 @@
-import { BotCommand } from "../types";
+import { BotCommand } from "../types"
 
 export const ping: BotCommand = {
     data: {
@@ -6,6 +6,6 @@ export const ping: BotCommand = {
         description: 'Checks if the bot is online'
     },
     async execute(interaction) {
-        await interaction.reply('Good fucking morning');
+        await interaction.reply('Good fucking morning')
     }
 };

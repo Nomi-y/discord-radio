@@ -1,13 +1,14 @@
-import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
-import { VoiceBasedChannel } from 'discord.js';
-import { VoiceSession } from '../types';
-import { AudioPlayerService } from './player';
+import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice'
+
+import { VoiceBasedChannel } from 'discord.js'
+import { VoiceSession } from '../types'
+import { AudioPlayerService } from './player'
 
 export class VoiceService {
-    private static sessions = new Map<string, VoiceSession>();
+    private static sessions = new Map<string, VoiceSession>()
 
     static join(channel: VoiceBasedChannel): VoiceSession {
-        this.leave(channel.guild.id);
+        this.leave(channel.guild.id)
 
         const connection = joinVoiceChannel({
             channelId: channel.id,
@@ -17,17 +18,16 @@ export class VoiceService {
             selfMute: false,
         });
 
-        connection.on("stateChange", (oldState, newState) => {
-            console.log(`Connection state: ${oldState.status} → ${newState.status}`);
+        connection.on("stateChange", (_, newState) => {
             if (newState.status === VoiceConnectionStatus.Disconnected) {
-                this.leave(channel.guild.id);
+                this.leave(channel.guild.id)
             }
         });
 
         setTimeout(() => {
             if (connection.state.status === "signalling") {
-                console.log("Force-disconnecting...");
-                connection.destroy();
+                console.log("Force-disconnecting...")
+                connection.destroy()
             }
         }, 5000);
 
@@ -38,20 +38,24 @@ export class VoiceService {
             player: player
         }
 
-        this.sessions.set(channel.guild.id, session);
+        this.sessions.set(channel.guild.id, session)
 
-        connection.subscribe(player.getPlayer());
+        connection.subscribe(player.getPlayer())
 
-        return session;
+        return session
     }
 
     static leave(guildId: string): boolean {
-        const session = this.sessions.get(guildId);
+        const session = this.sessions.get(guildId)
         if (session) {
-            session.connection.destroy()
-            session.player.stop()
-            this.sessions.delete(guildId)
-            return true
+            try {
+                session.connection.destroy()
+                session.player.stop()
+                this.sessions.delete(guildId)
+                return true
+            } catch (e) {
+                console.error(e)
+            }
         }
         return false
     }

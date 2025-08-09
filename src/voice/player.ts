@@ -1,6 +1,9 @@
-import { createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType, AudioPlayer, NoSubscriberBehavior } from '@discordjs/voice';
-import { getRandomIntermission } from '../utils';
-import config from '../config';
+import { createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType, AudioPlayer, NoSubscriberBehavior } from '@discordjs/voice'
+import { spawn } from 'node:child_process'
+import prism from 'prism-media'
+
+import { getRandomIntermission } from '../utils'
+import config from '../config'
 
 export class AudioPlayerService {
     private player: AudioPlayer
@@ -48,10 +51,29 @@ export class AudioPlayerService {
     }
 
     private play(track: string) {
-        const resource = createAudioResource(track, {
-            inputType: StreamType.Arbitrary,
+        const ffmpeg = spawn('ffmpeg', [
+            '-i', track,
+            '-f', 's16le',
+            '-ar', '48000',
+            '-ac', '2',             // Stereo
+            '-loglevel', 'warning',
+            '-b:a', '192k',
+            'pipe:1'               // Output to stdout
+        ])
+
+        const opus = new prism.opus.Encoder({
+            rate: 48000,
+            channels: 2,
+            frameSize: 960
+        })
+
+        const stream = ffmpeg.stdout.pipe(opus)
+
+        const resource = createAudioResource(stream, {
+            inputType: StreamType.Opus,
             inlineVolume: true,
-        });
+        })
+
         this.player.play(resource)
 
         console.log('[Playing] ' + track)
@@ -133,7 +155,7 @@ export class AudioPlayerService {
     }
 
     public getPlayer(): AudioPlayer {
-        return this.player;
+        return this.player
     }
 
     public getQueue(): string[] {

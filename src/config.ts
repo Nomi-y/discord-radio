@@ -1,4 +1,4 @@
-import path from "node:path/posix"
+import path from "path"
 
 export default {
     paths: {
@@ -10,7 +10,8 @@ export default {
 
     messages: {
         guildRequired: 'This command only works in servers',
-        voiceChannelRequired: 'You must be in a voice channel to do this'
+        voiceChannelRequired: 'You must be in a voice channel to do this',
 
+        noSessionInThisGuild: 'There is no active playback in this server'
     }
 }

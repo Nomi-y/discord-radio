@@ -1,33 +1,33 @@
-import type { BotCommand } from '../types';
-import { ChatInputCommandInteraction } from 'discord.js';
+import type { BotCommand } from '../types'
+import { ChatInputCommandInteraction } from 'discord.js'
 
 
-import { ping } from './ping';
-import { join } from './join';
+import { ping } from './ping'
 import { pause } from './pause'
-import { play } from './play';
-import { shuffle } from './shuffle';
-import { skip } from './skip';
+import { play } from './play'
+import { shuffle } from './shuffle'
+import { skip } from './skip'
+import { stop } from './stop'
 
 export const commands: Record<string, BotCommand> = {
     ping,
-    join,
     pause,
     play,
     shuffle,
-    skip
+    skip,
+    stop
 };
 
-export const COMMANDS = Object.values(commands).map(cmd => cmd.data);
+export const COMMANDS = Object.values(commands).map(cmd => cmd.data)
 
 export async function executeCommand(interaction: ChatInputCommandInteraction) {
-    const command = commands[interaction.commandName];
-    if (!command) return;
+    const command = commands[interaction.commandName]
+    if (!command) return
 
     try {
-        await command.execute(interaction);
+        await command.execute(interaction)
     } catch (error) {
-        console.error(`Error executing ${interaction.commandName}:`, error);
+        console.error(`Error executing ${interaction.commandName}:`, error)
         await interaction.reply({
             content: '❌ An error occurred while executing this command',
             ephemeral: true
