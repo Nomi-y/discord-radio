@@ -76,7 +76,7 @@ export class AudioPlayerService {
 
         this.player.play(resource)
 
-        console.log('[Playing] ' + track)
+        // console.log('[Playing] ' + track)
     }
 
     public stop() {
