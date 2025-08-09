@@ -17,7 +17,7 @@ export const pause: BotCommand = {
             return interaction.reply(config.messages.guildRequired)
         }
 
-        if (await InteractionHelper.isInVoiceChannel(interaction)) {
+        if (!InteractionHelper.isInVoiceChannel(interaction)) {
             return interaction.reply(config.messages.voiceChannelRequired)
         }
 
