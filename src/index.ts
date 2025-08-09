@@ -14,24 +14,21 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildVoiceStates,
     ],
-});
+})
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!)
 
 async function deployCommands() {
     try {
-        console.log('Refreshing slash commands...');
-
         await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID!),
             { body: COMMANDS }
         );
-
-        console.log('Commands deployed!');
     } catch (error) {
         console.error('Failed to deploy commands:', error)
     }
 }
+
 // Silencing warning from @discordjs/voice setting negative timeouts
 process.on('warning', warning => {
     if (warning.name !== 'TimeoutNegativeWarning') {
@@ -43,7 +40,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isChatInputCommand()) {
         await executeCommand(interaction)
     }
-});
+})
 
 client.on('ready', () => {
     console.log(`✅ Bot is online as ${client.user?.tag}`)
