@@ -22,6 +22,12 @@ export const play: BotCommand = {
             })
         }
 
+        const session = VoiceService.getSession(interaction.guild!.id)
+        if (session) {
+            session.player.unpause()
+            return interaction.reply('Resumed playback')
+        }
+
         try {
             const session = VoiceService.join(channel)
 
