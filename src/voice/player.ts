@@ -1,8 +1,7 @@
-import { createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType, AudioPlayer, NoSubscriberBehavior } from '@discordjs/voice'
+import { createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType, AudioPlayer, NoSubscriberBehavior, AudioResource } from '@discordjs/voice'
 import { spawn } from 'node:child_process'
-import prism from 'prism-media'
 
-import { getRandomIntermission } from '../utils'
+import { getRandomIntermission, calculateIntermissionInterval, getIntermissionJingle } from '../utils'
 import config from '../config'
 
 export class AudioPlayerService {
@@ -11,7 +10,7 @@ export class AudioPlayerService {
     private intermissionQueue = new Array<string>()
 
     private nextTrackCounter = 0
-    private intermissionPlayed = false
+    private nextIntermissionCounter: number
 
     public constructor() {
         this.player = createAudioPlayer({
@@ -19,13 +18,17 @@ export class AudioPlayerService {
                 noSubscriber: NoSubscriberBehavior.Play,
                 maxMissedFrames: 5,
             },
-        });
+        })
 
-        this.setupEventHandlers();
+        this.nextIntermissionCounter = calculateIntermissionInterval(
+            config.intermission.interval.lowerBound,
+            config.intermission.interval.upperBound)
+
+        this.setupEventHandlers()
     }
 
     private async intermissionQueueManager() {
-        const targetSize = config.intermissionQueueSize
+        const targetSize = config.intermission.noRepeatQueueSize
 
         while (this.intermissionQueue.length < targetSize) {
             const im = await getRandomIntermission()
@@ -50,33 +53,8 @@ export class AudioPlayerService {
         });
     }
 
-    private play(track: string) {
-        const ffmpeg = spawn('ffmpeg', [
-            '-i', track,
-            '-f', 's16le',
-            '-ar', '48000',
-            '-ac', '2',             // Stereo
-            '-loglevel', 'warning',
-            '-b:a', '192k',
-            'pipe:1'               // Output to stdout
-        ])
-
-        const opus = new prism.opus.Encoder({
-            rate: 48000,
-            channels: 2,
-            frameSize: 960
-        })
-
-        const stream = ffmpeg.stdout.pipe(opus)
-
-        const resource = createAudioResource(stream, {
-            inputType: StreamType.Opus,
-            inlineVolume: true,
-        })
-
-        this.player.play(resource)
-
-        // console.log('[Playing] ' + track)
+    private play(track: AudioResource) {
+        this.player.play(track)
     }
 
     public stop() {
@@ -117,11 +95,7 @@ export class AudioPlayerService {
     }
 
     public async playNextInQueue() {
-        if (
-            this.nextTrackCounter > 0
-            && this.nextTrackCounter % config.intermissionEveryXTracks === 0
-            && !this.intermissionPlayed
-        ) {
+        if (this.shouldPlayIntermission()) {
             await this.playIntermission()
             return
         }
@@ -129,10 +103,11 @@ export class AudioPlayerService {
         const track = this.queue.at(this.nextTrackCounter)
 
         this.nextTrackCounter++
-        this.intermissionPlayed = false
+        this.nextIntermissionCounter--
 
         if (track) {
-            this.play(track)
+            const recource = await createTrackAudio(track)
+            this.play(recource)
         } else if (this.queue.length > 0) {
             console.log('Queue is empty - looping...')
             this.nextTrackCounter = 0
@@ -145,13 +120,26 @@ export class AudioPlayerService {
     public async playIntermission() {
         await this.intermissionQueueManager()
 
+        this.nextIntermissionCounter = calculateIntermissionInterval(
+            config.intermission.interval.lowerBound,
+            config.intermission.interval.upperBound
+        )
+
         const track = this.intermissionQueue.shift()!
+        const preJingle = config.intermission.jingle.before ?
+            await getIntermissionJingle() :
+            null
+        const postJingle = config.intermission.jingle.after ?
+            await getIntermissionJingle() :
+            null
 
         if (track) {
-            this.play(track)
+            const resource = await createTrackAudio(track, {
+                preJinglePath: preJingle,
+                postJinglePath: postJingle
+            })
+            this.play(resource)
         }
-
-        this.intermissionPlayed = true
     }
 
     public getPlayer(): AudioPlayer {
@@ -161,6 +149,48 @@ export class AudioPlayerService {
     public getQueue(): string[] {
         return this.queue
     }
+
+    public shouldPlayIntermission(): boolean {
+        return this.nextTrackCounter > 0
+            && this.nextIntermissionCounter === 0
+    }
+
+}
+
+
+async function createTrackAudio(
+    mainTrackPath: string,
+    options?: {
+        preJinglePath?: string | null
+        postJinglePath?: string | null
+    }
+): Promise<AudioResource> {
+    const filter = [
+        options?.preJinglePath ? `[0][1]concat=n=2:v=0:a=1` : '',
+        options?.postJinglePath ? `[a][2]concat=n=2:v=0:a=1` : ''
+    ].filter(Boolean).join(';')
+
+    const args = [
+        ...(options?.preJinglePath ? ['-i', options.preJinglePath] : []),
+        '-i', mainTrackPath,
+        ...(options?.postJinglePath ? ['-i', options.postJinglePath] : []),
+        '-filter_complex', filter || 'anull',
+        '-f', 'opus',
+        '-ar', '48000',
+        '-ac', '2',
+        '-b:a', '192k',
+        'pipe:1'
+    ]
+
+    const ffmpeg = spawn('ffmpeg', args);
+
+    ffmpeg.stderr.on('data', (chunk) => console.error(chunk.toString()))
+    ffmpeg.on('error', console.error)
+
+    return createAudioResource(ffmpeg.stdout, {
+        inputType: StreamType.Opus,
+        inlineVolume: true
+    })
 }
 
 
