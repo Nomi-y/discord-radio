@@ -1,6 +1,6 @@
 {
   "name": "discord-radio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.ts",
   "scripts": {
@@ -17,7 +17,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "type": "CommonJS",
   "bugs": {
     "url": "https://github.com/Nomi-y/discord-radio/issues"
