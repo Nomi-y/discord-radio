@@ -1,13 +1,9 @@
-import { Client, GatewayIntentBits, REST, Routes, User } from 'discord.js'
+import { Client, GatewayIntentBits, REST, Routes } from 'discord.js'
 import dotenv from 'dotenv'
 
 import { COMMANDS, executeCommand } from './commands/commands'
 
 dotenv.config()
-
-export let devUserCache: { user: User; timestamp: number } | null = null;
-export const CACHE_TTL_MS = 3600000
-const DEV_USER_ID = '541679358763335694'
 
 const client = new Client({
     intents: [
@@ -33,6 +29,12 @@ async function deployCommands() {
     }
 }
 
+// Silencing warning from @discordjs/voice setting negative timeouts
+process.on('warning', warning => {
+    if (warning.name !== 'TimeoutNegativeWarning') {
+        console.warn(warning)
+    }
+})
 
 client.on('interactionCreate', async interaction => {
     if (interaction.isChatInputCommand()) {
@@ -41,26 +43,9 @@ client.on('interactionCreate', async interaction => {
 })
 
 client.on('ready', () => {
-    updateDevUserCache(client).catch(console.error)
-    deployCommands()
     console.log(`✅ Bot is online as ${client.user?.tag}`)
+    deployCommands()
 })
 
 
-client.login(process.env.DISCORD_TOKEN)
-
-function fetchUser(client: Client, id: string): Promise<User> {
-    return client.users.fetch(id)
-}
-
-export async function updateDevUserCache(client: Client) {
-    try {
-        const user = await fetchUser(client, DEV_USER_ID)
-        devUserCache = {
-            user: user,
-            timestamp: Date.now()
-        }
-    } catch (error) {
-        console.error('Failed to update dev cache:', error)
-    }
-}
+client.login(process.env.DISCORD_TOKEN);

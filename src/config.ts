@@ -4,10 +4,9 @@ export default {
     paths: {
         music: path.join(__dirname, "../resources/music/"),
         intermissions: path.join(__dirname, "../resources/intermissions/"),
-        jingle: path.join(__dirname, "../resources/jingle/")
     },
-
     intermission: {
+
         noRepeatQueueSize: 1,
         // Max # of unique intermissions before they can repeat
         //
@@ -27,6 +26,7 @@ export default {
     messages: {
         guildRequired: 'This command only works in servers',
         voiceChannelRequired: 'You must be in a voice channel to do this',
+
         noSessionInThisGuild: 'There is no active playback in this server'
     }
 }

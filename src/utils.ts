@@ -27,18 +27,6 @@ export async function getRandomIntermission(): Promise<string | null> {
     }
 }
 
-export async function getIntermissionJingle(): Promise<string | null> {
-    try {
-        const files = (await fs.readdir(config.paths.jingle))
-            .filter(f => f.endsWith('.mp3'))
-            .map(f => path.join(config.paths.jingle, f))
-        return files[Math.floor(Math.random() * files.length)]
-    } catch (e) {
-        console.error(e)
-        return null
-    }
-}
-
 export const InteractionHelper = {
 
     async isInVoiceChannel(interaction: Interaction): Promise<boolean> {

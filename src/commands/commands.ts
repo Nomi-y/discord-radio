@@ -8,8 +8,6 @@ import { play } from './play'
 import { shuffle } from './shuffle'
 import { skip } from './skip'
 import { stop } from './stop'
-import { dev } from './dev'
-
 
 export const commands: Record<string, BotCommand> = {
     ping,
@@ -17,8 +15,7 @@ export const commands: Record<string, BotCommand> = {
     play,
     shuffle,
     skip,
-    stop,
-    dev
+    stop
 };
 
 export const COMMANDS = Object.values(commands).map(cmd => cmd.data)
