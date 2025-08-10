@@ -1,8 +1,8 @@
-import { createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType, AudioPlayer, NoSubscriberBehavior } from '@discordjs/voice'
+import { createAudioPlayer, AudioPlayerStatus, StreamType, AudioPlayer, NoSubscriberBehavior, AudioResource, createAudioResource } from '@discordjs/voice'
 import { spawn } from 'node:child_process'
 import prism from 'prism-media'
 
-import { calculateIntermissionInterval, getRandomIntermission } from '../utils'
+import { calculateIntermissionInterval, getJingle, getRandomIntermission } from '../utils'
 import config from '../config'
 
 export class AudioPlayerService {
@@ -54,34 +54,8 @@ export class AudioPlayerService {
         });
     }
 
-    // I spent 3 hours debugging audio streams...
-    private play(track: string) {
-        const ffmpeg = spawn('ffmpeg', [
-            '-i', track,
-            '-f', 's16le',
-            '-ar', '48000',
-            '-ac', '2',             // Stereo
-            '-loglevel', 'warning',
-            '-b:a', '192k',
-            'pipe:1'               // Output to stdout
-        ])
-
-        const opus = new prism.opus.Encoder({
-            rate: 48000,
-            channels: 2,
-            frameSize: 960
-        })
-
-        const stream = ffmpeg.stdout.pipe(opus)
-
-        const resource = createAudioResource(stream, {
-            inputType: StreamType.Opus,
-            inlineVolume: true,
-        })
-
+    private play(resource: AudioResource) {
         this.player.play(resource)
-
-        // console.log('[Playing] ' + track)
     }
 
     public stop() {
@@ -122,7 +96,7 @@ export class AudioPlayerService {
     }
 
     public async playNextInQueue(): Promise<void> {
-        if (this.nextTrackCounter >= this.queue.length) {
+        if (this.nextTrackCounter >= this.queue.length && this.queue.length > 0) {
             console.log('Queue is empty - looping...')
             this.nextTrackCounter = 0
 
@@ -143,7 +117,8 @@ export class AudioPlayerService {
         this.nextTrackCounter++
 
         if (track) {
-            this.play(track)
+            const resource = await encodeAudioTrack(track)
+            this.play(resource)
         }
     }
 
@@ -155,9 +130,20 @@ export class AudioPlayerService {
         )
 
         const track = this.intermissionQueue.shift()!
+        const jingleConfig = config.intermission.jingle
+        const jingleSound = await getJingle()
+        console.log(jingleSound)
+        const jingle = {
+            pre: jingleConfig.before && jingleSound ? jingleSound : undefined,
+            after: jingleConfig.after && jingleSound ? jingleSound : undefined
+        }
 
         if (track) {
-            this.play(track)
+            const resource = await encodeAudioTrack(track, {
+                pre: jingle.pre,
+                after: jingle.after
+            })
+            this.play(resource)
         }
         console.debug(`next intermission in: ${this.nextIntermissionCounter}`)
     }
@@ -173,6 +159,66 @@ export class AudioPlayerService {
     public getQueue(): string[] {
         return this.queue
     }
+
+}
+
+// I spent 3 hours debugging audio streams...
+async function encodeAudioTrack(track: string, options?: {
+    pre?: string,
+    after?: string,
+}): Promise<AudioResource> {
+    const ffmpegArgs = [
+        '-loglevel', 'warning'
+    ]
+
+    if (options?.pre) {
+        ffmpegArgs.push('-i', options.pre);
+    }
+
+    ffmpegArgs.push('-i', track);
+
+    if (options?.after) {
+        ffmpegArgs.push('-i', options.after);
+    }
+
+    const filter = []
+    let inputCount = 0
+
+    if (options?.pre) {
+        filter.push(`[${inputCount++}:a]`)
+    }
+
+    filter.push(`[${inputCount++}:a]`)
+
+    if (options?.after) {
+        filter.push(`[${inputCount}:a]`)
+    }
+
+    ffmpegArgs.push(
+        '-filter_complex',
+        `${filter.join('')}concat=n=${inputCount + (options?.after ? 1 : 0)}:v=0:a=1[a]`,
+        '-map', '[a]',
+        '-f', 's16le',
+        '-ar', '48000',
+        '-ac', '2',
+        '-b:a', '192k',
+        'pipe:1'
+    )
+
+    const ffmpeg = spawn('ffmpeg', ffmpegArgs)
+
+    const opus = new prism.opus.Encoder({
+        rate: 48000,
+        channels: 2,
+        frameSize: 960
+    })
+
+    const stream = ffmpeg.stdout.pipe(opus)
+
+    return createAudioResource(stream, {
+        inputType: StreamType.Opus,
+        inlineVolume: true,
+    })
 }
 
 

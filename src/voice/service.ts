@@ -49,8 +49,8 @@ export class VoiceService {
         const session = this.sessions.get(guildId)
         if (session) {
             try {
-                session.connection.destroy()
                 session.player.stop()
+                session.connection.destroy()
                 this.sessions.delete(guildId)
                 return true
             } catch (e) {
