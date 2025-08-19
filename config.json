@@ -1,0 +1,30 @@
+{
+  "paths": {
+    "music": "./resources/music/",
+    "intermissions": "./resources/intermissions/",
+    "jingle": "./resources/jingle/"
+  },
+  "intermissions": {
+    "noRepeatQueueSize": 1,
+    "jingle": {
+      "before": true,
+      "after": true
+    },
+    "interval": {
+      "lowerBound": 3,
+      "upperBound": 6
+    }
+  },
+  "playback": {
+    "autoshuffle": true,
+    "crossfade": {
+      "enabled": true,
+      "fadeDuration": 300
+    }
+  },
+  "messages": {
+    "guildRequired": "This command only works in servers",
+    "voiceChannelRequired": "You must be in a voice channel to do this",
+    "noSessionInThisGuild": "There is no active playback in this server"
+  }
+}

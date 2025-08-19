@@ -1,0 +1,42 @@
+services:
+  node-bot:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./config.json:/usr/src/app/config.json
+      - ./src:/usr/src/app/src
+    networks:
+      - radio-network
+    depends_on:
+      - liquidsoap
+      - icecast
+    restart: unless-stopped
+
+  liquidsoap:
+    image: savonet/liquidsoap:v2.3.1
+    networks:
+      - radio-network
+    volumes:
+      - ./radio:/etc/liquidsoap
+      - ./resources:/audio
+    command: /etc/liquidsoap/radio.liq
+    depends_on:
+      - icecast
+    restart: unless-stopped
+
+  icecast:
+    image: moul/icecast:latest
+    networks:
+      - radio-network
+    environment:
+      - ICECAST_SOURCE_PASSWORD=insftKNHq6R3uBTEycESwGgvXd7O3xmnc3KMTTYGWnPg8Sy1rkm1M8gte5MophSo
+    volumes:
+      - ./icecast/logs:/var/log/icecast
+    restart: unless-stopped
+
+networks:
+  radio-network:
+    driver: bridge

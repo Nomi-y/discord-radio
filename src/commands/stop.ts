@@ -1,7 +1,7 @@
 import { MessageFlags } from "discord.js"
 
 import { BotCommand } from "../types"
-import { VoiceService } from "../voice/service"
+import { AudioService } from "../audio/service"
 import config from "../config"
 import { InteractionHelper } from "../utils"
 
@@ -24,7 +24,7 @@ export const stop: BotCommand = {
             })
         }
 
-        const session = VoiceService.getSession(guildID)
+        const session = AudioService.getConnection(guildID)
 
         if (!session) {
             return interaction.reply({
@@ -33,7 +33,9 @@ export const stop: BotCommand = {
             })
         }
 
-        VoiceService.leave(guildID)
+        const channel = await InteractionHelper.getUserVoiceChannel(interaction)
+
+        AudioService.leave(channel!)
 
         return interaction.reply('Stopped playback')
 

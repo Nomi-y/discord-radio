@@ -1,9 +1,10 @@
 import { MessageFlags } from "discord.js"
 
 import { BotCommand } from "../types"
-import { VoiceService } from "../voice/service"
+import { AudioService } from "../audio/service"
 import config from "../config"
 import { InteractionHelper } from "../utils"
+import { CrossfadePlayer } from "../audio/crossfadePlayer"
 
 export const skip: BotCommand = {
     data: {
@@ -24,16 +25,7 @@ export const skip: BotCommand = {
             })
         }
 
-        const session = VoiceService.getSession(guildID)
-
-        if (!session) {
-            return interaction.reply({
-                content: config.messages.noSessionInThisGuild,
-                flags: MessageFlags.Ephemeral
-            })
-        }
-
-        session?.player.playNextInQueue()
+        CrossfadePlayer.skip()
 
         return interaction.reply("Skipped track")
     }

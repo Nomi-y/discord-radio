@@ -6,7 +6,7 @@ export default {
         intermissions: path.join(__dirname, "../resources/intermissions/"),
         jingle: path.join(__dirname, "../resources/jingle/"),
     },
-    intermission: {
+    intermissions: {
 
         noRepeatQueueSize: 1,
         // Max # of unique intermissions before they can repeat
@@ -22,6 +22,13 @@ export default {
             upperBound: 6,     // Max tracks between intermissions
             // For completely random bounds set one or both to -1
         },
+    },
+    playback: {
+        autoshuffle: true,
+        crossfade: {
+            enabled: true,
+            fadeDuration: 0
+        }
     },
 
     messages: {

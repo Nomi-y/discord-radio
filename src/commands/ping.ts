@@ -1,11 +1,12 @@
 import { BotCommand } from "../types"
+import { CommandInteraction } from "discord.js"
 
 export const ping: BotCommand = {
     data: {
         name: 'ping',
         description: 'Checks if the bot is online'
     },
-    async execute(interaction) {
+    async execute(interaction: CommandInteraction) {
         return Math.random() <= .9 ?
             interaction.reply("Bot is online.") :
             interaction.reply(getRandomPingReplyMessage())

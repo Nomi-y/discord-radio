@@ -1,12 +1,15 @@
 import fs from 'fs/promises'
-import config from './config'
+import config from '../config.json'
 import path from 'path'
-import { Interaction, VoiceBasedChannel } from 'discord.js'
+import { CommandInteraction, VoiceBasedChannel } from 'discord.js'
+
+const projectRoot = path.resolve(__dirname, '..')
 
 export async function getSongListFromLocalFiles(): Promise<string[]> {
     try {
-        const files = (await fs.readdir(config.paths.music))
-            .map(f => path.join(config.paths.music, f))
+        const music = path.resolve(projectRoot, config.paths.music)
+        const files = (await fs.readdir(music))
+            .map(f => path.join(music, f))
         return files
     } catch (e) {
         console.error(e)
@@ -16,8 +19,9 @@ export async function getSongListFromLocalFiles(): Promise<string[]> {
 
 export async function getRandomIntermission(): Promise<string | null> {
     try {
-        const files = (await fs.readdir(config.paths.intermissions))
-            .map(f => path.join(config.paths.intermissions, f))
+        const interm = path.resolve(projectRoot, config.paths.intermissions)
+        const files = (await fs.readdir(interm))
+            .map(f => path.join(interm, f))
         return files[Math.floor(Math.random() * files.length)]
     } catch (e) {
         console.error(e)
@@ -27,8 +31,9 @@ export async function getRandomIntermission(): Promise<string | null> {
 
 export async function getJingle(): Promise<string | null> {
     try {
-        const files = (await fs.readdir(config.paths.jingle))
-            .map(f => path.join(config.paths.jingle, f))
+        const jingel = path.resolve(projectRoot, config.paths.music)
+        const files = (await fs.readdir(jingel))
+            .map(f => path.join(jingel, f))
         return files[Math.floor(Math.random() * files.length)]
     } catch (e) {
         console.error(e)
@@ -38,13 +43,12 @@ export async function getJingle(): Promise<string | null> {
 
 export const InteractionHelper = {
 
-    async isInVoiceChannel(interaction: Interaction): Promise<boolean> {
+    async isInVoiceChannel(interaction: CommandInteraction): Promise<boolean> {
         const member = await interaction.guild?.members.fetch(interaction.user.id)
-        const channel = member?.voice.channel
-        return !!channel
+        return !!member?.voice.channel
     },
 
-    async getUserVoiceChannel(interaction: Interaction): Promise<VoiceBasedChannel | null | undefined> {
+    async getUserVoiceChannel(interaction: CommandInteraction): Promise<VoiceBasedChannel | null | undefined> {
         const member = await interaction.guild?.members.fetch(interaction.user.id)
         return member?.voice.channel
     }

@@ -1,6 +1,6 @@
+import { CommandInteraction } from "discord.js"
+import { CrossfadePlayer } from "./audio/crossfadePlayer"
 import { VoiceConnection } from "@discordjs/voice"
-import { ChatInputCommandInteraction } from "discord.js"
-import { AudioPlayerService } from "./voice/player"
 
 export interface BotCommand {
     data: {
@@ -8,10 +8,13 @@ export interface BotCommand {
         description: string
         options?: any[]
     }
-    execute: (interaction: ChatInputCommandInteraction) => Promise<any>
+    execute: (interaction: CommandInteraction) => Promise<any>
 }
 
 export type VoiceSession = {
     connection: VoiceConnection,
-    player: AudioPlayerService
-} 
+}
+
+export interface Config {
+
+}

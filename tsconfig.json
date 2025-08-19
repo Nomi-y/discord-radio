@@ -6,7 +6,8 @@
     "rootDir": "./src",
     "esModuleInterop": true,
     "target": "ES2022",
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*"
