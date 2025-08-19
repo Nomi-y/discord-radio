@@ -2,7 +2,7 @@ import { CommandInteraction } from 'discord.js'
 import { BotCommand } from '../types'
 import { getSongListFromLocalFiles, InteractionHelper } from '../utils'
 import { AudioService } from '../audio/service'
-import config from '../config'
+import config from '../../config.json'
 
 export const play: BotCommand = {
     data: {

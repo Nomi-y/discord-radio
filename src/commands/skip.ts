@@ -2,7 +2,7 @@ import { MessageFlags } from "discord.js"
 
 import { BotCommand } from "../types"
 import { AudioService } from "../audio/service"
-import config from "../config"
+import config from "../../config.json"
 import { InteractionHelper } from "../utils"
 import { CrossfadePlayer } from "../audio/crossfadePlayer"
 

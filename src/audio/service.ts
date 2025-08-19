@@ -2,7 +2,7 @@ import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice'
 import { VoiceSession } from '../types'
 import { CrossfadePlayer } from './crossfadePlayer'
 import { getSongListFromLocalFiles } from '../utils'
-import config from '../config'
+import config from '../../config.json'
 import { VoiceBasedChannel } from 'discord.js'
 
 export class AudioService {
